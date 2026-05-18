@@ -1,0 +1,17 @@
+[
+  { "id":301, "name":"Kaju Katli (500g)", "price":550, "image":"" },
+  { "id":302, "name":"Gulab Jamun (1kg)", "price":380, "image":"" },
+  { "id":303, "name":"Rasgulla (1kg)", "price":320, "image":"" },
+  { "id":304, "name":"Motichoor Ladoo (500g)", "price":290, "image":"" },
+  { "id":305, "name":"Rajbhog (500g)", "price":340, "image":"" },
+  { "id":306, "name":"Peda (500g)", "price":260, "image":"" },
+  { "id":307, "name":"Badam Katli (500g)", "price":620, "image":"" },
+  { "id":308, "name":"Anarkali (500g)", "price":700, "image":"" },
+  { "id":309, "name":"Soan Papdi (500g)", "price":180, "image":"" },
+  { "id":310, "name":"Milk Cake (500g)", "price":300, "image":"" },
+  { "id":311, "name":"Balushahi (500g)", "price":240, "image":"" },
+  { "id":312, "name":"Aloo Bhujia (500g)", "price":160, "image":"" },
+  { "id":313, "name":"Kaju Mixture (500g)", "price":340, "image":"" },
+  { "id":314, "name":"Navratan Mixture (500g)", "price":280, "image":"" },
+  { "id":315, "name":"Family Sweet Box", "price":999, "image":"" }
+]
