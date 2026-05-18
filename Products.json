@@ -1,0 +1,22 @@
+[
+  { "id":1, "name":"Kaju Katli (500g)", "category":"dryfruit", "price":550, "desc":"Premium silver-coated kaju katli", "image":"" },
+  { "id":2, "name":"Gulab Jamun (1kg)", "category":"mithai", "price":380, "desc":"Soft, melt-in-mouth gulab jamuns", "image":"" },
+  { "id":3, "name":"Rasgulla (1kg)", "category":"mithai", "price":320, "desc":"Spongy Bengali-style rasgullas", "image":"" },
+  { "id":4, "name":"Motichoor Ladoo (500g)", "category":"mithai", "price":290, "desc":"Fine boondi ladoos with pure ghee", "image":"" },
+  { "id":5, "name":"Rajbhog (500g)", "category":"mithai", "price":340, "desc":"Stuffed saffron rasgullas", "image":"" },
+  { "id":6, "name":"Peda (500g)", "category":"mithai", "price":260, "desc":"Creamy milk peda with cardamom", "image":"" },
+  { "id":7, "name":"Badam Katli (500g)", "category":"dryfruit", "price":620, "desc":"Almond-rich diamond cuts", "image":"" },
+  { "id":8, "name":"Anarkali (500g)", "category":"dryfruit", "price":700, "desc":"Cashew & pistachio rolls", "image":"" },
+  { "id":9, "name":"Soan Papdi (500g)", "category":"mithai", "price":180, "desc":"Flaky traditional sweet", "image":"" },
+  { "id":10, "name":"Milk Cake (500g)", "category":"mithai", "price":300, "desc":"Rich caramelized milk sweet", "image":"" },
+  { "id":11, "name":"Balushahi (500g)", "category":"mithai", "price":240, "desc":"Golden flaky sweet dumplings", "image":"" },
+  { "id":12, "name":"Khurmani (500g)", "category":"dryfruit", "price":850, "desc":"Apricot stuffed with mawa", "image":"" },
+  { "id":13, "name":"Rasmalai (500g)", "category":"mithai", "price":310, "desc":"Paneer discs in creamy milk", "image":"" },
+  { "id":14, "name":"Besan Ladoo (500g)", "category":"mithai", "price":220, "desc":"Gram flour ladoos with ghee", "image":"" },
+  { "id":15, "name":"Aloo Bhujia (500g)", "category":"namkeen", "price":160, "desc":"Spicy potato chickpea noodles", "image":"" },
+  { "id":16, "name":"Kaju Mixture (500g)", "category":"namkeen", "price":340, "desc":"Cashew & sev mix", "image":"" },
+  { "id":17, "name":"Dal Biji (500g)", "category":"namkeen", "price":170, "desc":"Crunchy lentil snack", "image":"" },
+  { "id":18, "name":"Gathiya (500g)", "category":"namkeen", "price":150, "desc":"Crispy gram flour sticks", "image":"" },
+  { "id":19, "name":"Navratan Mixture (500g)", "category":"namkeen", "price":280, "desc":"9-ingredient savory mix", "image":"" },
+  { "id":20, "name":"Family Sweet Box", "category":"combo", "price":999, "desc":"5 varieties, 2.5kg total", "image":"" }
+]
