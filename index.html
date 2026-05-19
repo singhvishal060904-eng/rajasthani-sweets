@@ -279,32 +279,8 @@ async function uploadImageToImgBB(file) {
     });
 }
 
-// ========== REALTIME    {id:14, name:'Navratan Mixture (500g)', category:'namkeen', price:280, image:''},
-    {id:15, name:'Family Sweet Box', category:'combo', price:999, image:''}
-  ];
-}
-function defaultMenuItems() {
-  return [
-    {id:301, name:'Kaju Katli (500g)', price:550, image:''},
-    {id:302, name:'Gulab Jamun (1kg)', price:380, image:''},
-    {id:303, name:'Rasgulla (1kg)', price:320, image:''},
-    {id:304, name:'Motichoor Ladoo (500g)', price:290, image:''},
-    {id:305, name:'Rajbhog (500g)', price:340, image:''},
-    {id:306, name:'Peda (500g)', price:260, image:''},
-    {id:307, name:'Badam Katli (500g)', price:620, image:''},
-    {id:308, name:'Anarkali (500g)', price:700, image:''},
-    {id:309, name:'Soan Papdi (500g)', price:180, image:''},
-    {id:310, name:'Milk Cake (500g)', price:300, image:''},
-    {id:311, name:'Balushahi (500g)', price:240, image:''},
-    {id:312, name:'Aloo Bhujia (500g)', price:160, image:''},
-    {id:313, name:'Kaju Mixture (500g)', price:340, image:''},
-    {id:314, name:'Navratan Mixture (500g)', price:280, image:''},
-    {id:315, name:'Family Sweet Box', price:999, image:''}
-  ];
-}
-
-// ========== FIREBASE REAL-TIME LISTENER ==========
-function startRealtimeListener() {
+// ========== REALTIME LISTENERS ==========
+function startRealtimeListeners() {
   MAIN_DOC.onSnapshot((doc) => {
     if (doc.exists) {
       const data = doc.data();
@@ -314,23 +290,30 @@ function startRealtimeListener() {
       nextProductId = Math.max(100, ...products.map(p => p.id)) + 1;
       nextMenuItemId = Math.max(400, ...menuItems.map(m => m.id)) + 1;
     } else {
-      // Create initial document with defaults
       const initData = {
         products: defaultProducts(),
         menuItems: defaultMenuItems(),
         heroImage: 'https://via.placeholder.com/280x280/ea580c/ffffff?text=Shri+Rajasthani+Sweets',
         adminPassword: ADMIN_PASSWORD
       };
-      MAIN_DOC.set(initData).catch(e => console.error("Firestore init error:", e));
+      MAIN_DOC.set(initData).catch(e => console.error(e));
       products = defaultProducts();
       menuItems = defaultMenuItems();
       document.getElementById('heroImage').src = initData.heroImage;
-      nextProductId = 100;
-      nextMenuItemId = 400;
     }
     renderProducts();
     renderMenuChart();
     updateProductCount();
+  });
+
+  db.collection('orders').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
+    orders = [];
+    snapshot.forEach(doc => {
+      orders.push({ id: doc.id, ...doc.data() });
+    });
+    if (document.getElementById('adminOrdersSection').style.display === 'block') {
+      renderOrdersList();
+    }
   });
 }
 
@@ -340,993 +323,355 @@ async function updateFirestore(updateData) {
     await MAIN_DOC.update({ ...updateData, adminPassword: ADMIN_PASSWORD });
     showToast('✅ Updated for all visitors!');
   } catch (error) {
-    console.error('Firestore write error:', er        .hero-cta { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
-        .btn {
-            display:inline-flex; align-items:center; gap:8px; padding:13px 22px; border-radius:var(--radius-full);
-            font-weight:700; font-size:14px; cursor:pointer; border:none; text-decoration:none; transition:var(--transition);
-            white-space:nowrap; letter-spacing:0.1px; font-family:var(--font);
-        }
-        .btn-whatsapp { background:#25d366; color:#fff; box-shadow:0 6px 20px rgba(37,211,102,0.35); }
-        .btn-whatsapp:hover { background:#20bd59; transform:translateY(-2px); box-shadow:0 10px 28px rgba(37,211,102,0.45); }
-        .btn-call { background:#fff; color:var(--gray-800); box-shadow:var(--shadow-md); border:2px solid #fff; }
-        .btn-call:hover { transform:translateY(-2px); box-shadow:var(--shadow-lg); background:#fdfdfd; }
-        .hero-delivery-badge {
-            display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.15); backdrop-filter:blur(8px);
-            padding:8px 16px; border-radius:var(--radius-full); margin-top:18px; font-size:12px; font-weight:600;
-            border:1px solid rgba(255,255,255,0.25);
-        }
+    console.error(error);
+    showToast('❌ Update failed');
+  }
+}
 
-        .section { padding:28px 16px; }
-        .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-        .section-title { font-size:18px; font-weight:700; color:var(--gray-900); display:flex; align-items:center; gap:8px; }
-        .section-title .icon { font-size:22px; }
-        .section-badge { font-size:11px; background:var(--amber-100); color:var(--amber-600); padding:5px 10px; border-radius:var(--radius-full); font-weight:600; }
+async function saveProductsToFirestore() { await updateFirestore({ products }); }
+async function saveMenuItemsToFirestore() { await updateFirestore({ menuItems }); }
+async function saveHeroImageToFirestore(url) { await updateFirestore({ heroImage: url }); }
 
-        .offers-scroll { display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; padding:4px 0 8px; scrollbar-width:none; }
-        .offers-scroll::-webkit-scrollbar{ display:none; }
-        .offer-card {
-            flex:0 0 auto; width:260px; scroll-snap-align:start; border-radius:var(--radius-md); padding:18px 16px; color:#fff;
-            font-weight:600; position:relative; overflow:hidden; box-shadow:var(--shadow-md); cursor:default;
-        }
-        .offer-card.offer-1{ background:linear-gradient(135deg,#b45309,#d97706); }
-        .offer-card.offer-2{ background:linear-gradient(135deg,#b91c1c,#dc2626); }
-        .offer-card.offer-3{ background:linear-gradient(135deg,#6d28d9,#8b5cf6); }
-        .offer-card .offer-tag{ font-size:10px; text-transform:uppercase; letter-spacing:1px; opacity:0.85; margin-bottom:4px; }
-        .offer-card .offer-title{ font-size:17px; font-weight:700; }
-        .offer-card .offer-sub{ font-size:12px; opacity:0.85; margin-top:4px; font-weight:400; }
-        .offer-card .offer-icon{ position:absolute; right:12px; bottom:10px; font-size:40px; opacity:0.3; }
+async function saveOrderToFirestore(orderData) {
+  await db.collection('orders').add(orderData);
+}
 
-        .cat-scroll { display:flex; gap:10px; overflow-x:auto; scroll-snap-type:x proximity; padding:2px 0 6px; scrollbar-width:none; }
-        .cat-scroll::-webkit-scrollbar{ display:none; }
-        .cat-pill {
-            flex:0 0 auto; padding:11px 18px; border-radius:var(--radius-full); font-weight:600; font-size:13px;
-            cursor:pointer; border:2px solid var(--gray-200); background:var(--white); color:var(--gray-700);
-            transition:var(--transition); white-space:nowrap; scroll-snap-align:start; display:flex; align-items:center; gap:6px;
-        }
-        .cat-pill.active { background:var(--orange-600); color:#fff; border-color:var(--orange-600); box-shadow:0 4px 14px rgba(249,115,22,0.3); }
-        .cat-pill:active { transform:scale(0.96); }
+// ========== UI RENDER ==========
+function renderProducts() {
+  const grid = document.getElementById('productGrid');
+  let filtered = currentCategory === 'all' ? products : products.filter(p => p.category === currentCategory);
+  grid.innerHTML = filtered.map(p => {
+    const emoji = {mithai:'🍬',dryfruit:'🥜',namkeen:'🍘',combo:'🎁'}[p.category] || '🍬';
+    const imgHTML = p.image ? `<img src="${p.image}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><span style="display:none; font-size:50px;">${emoji}</span>` : `<span style="font-size:50px;">${emoji}</span>`;
+    return `<div class="product-card" data-id="${p.id}">
+      <div class="product-img">${imgHTML}</div>
+      <div style="padding:12px;">
+        <small>${p.category}</small>
+        <div style="font-weight:700;">${p.name}</div>
+        <div style="font-weight:800; color:var(--orange-700);">₹${p.price}</div>
+        <button class="add-to-cart-btn" data-id="${p.id}">➕ Add to Cart</button>
+      </div>
+    </div>`;
+  }).join('');
+  bindAddToCart();
+}
 
-        .product-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
-        @media(min-width:480px){ .product-grid{grid-template-columns:repeat(3,1fr);} }
-        @media(min-width:768px){ .product-grid{grid-template-columns:repeat(3,1fr); gap:16px;} }
-        @media(min-width:1024px){ .product-grid{grid-template-columns:repeat(4,1fr); gap:18px;} }
-        .product-card {
-            background:var(--white); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);
-            transition:var(--transition-slow); position:relative; border:1px solid var(--gray-100);
-            display:flex; flex-direction:column;
-        }
-        .product-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-lg); }
-        .product-img {
-            width:100%; aspect-ratio:1/1; object-fit:cover; background:var(--gray-100);
-            display:flex; align-items:center; justify-content:center; font-size:48px; position:relative; overflow:hidden;
-        }
-        .product-img img { width:100%; height:100%; object-fit:cover; display:block; }
-        .product-img .placeholder-emoji { position:absolute; font-size:50px; opacity:0.7; }
-        .product-info { padding:12px 10px 14px; flex-grow:1; display:flex; flex-direction:column; gap:4px; }
-        .product-cat-label { font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:var(--gray-400); font-weight:600; }
-        .product-name { font-weight:700; font-size:14px; color:var(--gray-900); }
-        .product-price { font-weight:800; font-size:17px; color:var(--orange-700); margin-top:auto; }
-        .add-to-cart-btn {
-            margin-top:6px; background:var(--orange-600); color:#fff; border:none; padding:6px 10px; border-radius:var(--radius-xs);
-            font-weight:600; font-size:12px; cursor:pointer; transition:var(--transition); display:flex; align-items:center;
-            justify-content:center; gap:4px; width:100%;
-        }
-        .add-to-cart-btn:hover { background:var(--orange-700); }
-
-        .menu-chart { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--gray-100); padding: 20px; margin: 0 16px; }
-        .menu-chart h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; color: var(--orange-700); }
-        .menu-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--gray-100); cursor: pointer; transition: background 0.2s; }
-        .menu-item:hover { background: var(--gray-50); }
-        .menu-item:last-child { border-bottom: none; }
-        .menu-item-left { display: flex; align-items: center; gap: 12px; flex: 1; }
-        .menu-item-img { width: 48px; height: 48px; border-radius: var(--radius-xs); object-fit: cover; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 28px; }
-        .menu-item-details { display: flex; flex-direction: column; }
-        .menu-item-name { font-weight: 600; font-size: 14px; color: var(--gray-900); }
-        .menu-item-price { font-size: 13px; font-weight: 700; color: var(--orange-700); }
-        .menu-add-btn {
-            background: var(--orange-600); color: #fff; border: none; padding: 8px 14px; border-radius: var(--radius-xs);
-            font-weight: 600; font-size: 13px; cursor: pointer; transition: var(--transition); white-space: nowrap;
-        }
-        .menu-add-btn:hover { background: var(--orange-700); }
-
-        .trust-section { background:var(--white); border-radius:var(--radius-lg); margin:0 16px; padding:24px 18px; box-shadow:var(--shadow); text-align:center; border:1px solid var(--gray-100); }
-        .trust-years { font-size:48px; font-weight:900; color:var(--orange-600); }
-        .trust-stats { display:flex; justify-content:center; gap:28px; flex-wrap:wrap; margin-top:14px; }
-        .trust-stat .num { font-size:22px; font-weight:800; color:var(--gray-900); }
-        .trust-stat .label { font-size:11px; color:var(--gray-500); font-weight:500; }
-
-        .delivery-highlight {
-            display:flex; align-items:center; gap:14px; background:linear-gradient(135deg,#fff7ed,#ffedd5);
-            border:2px dashed var(--orange-300); border-radius:var(--radius-lg); padding:18px 16px; margin:0 16px;
-        }
-        .map-container { border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow-md); margin:0 16px; border:1px solid var(--gray-200); aspect-ratio:16/11; max-height:350px; }
-        .map-container iframe { width:100%; height:100%; border:none; }
-
-        .footer { background:var(--gray-900); color:#cbd5e1; padding:28px 16px 20px; text-align:center; font-size:13px; }
-        .footer .store-name { color:#fff; font-weight:700; font-size:16px; }
-        .footer a { color:#93c5fd; text-decoration:none; font-weight:500; }
-        .footer .admin-link { display:inline-block; margin-top:14px; font-size:11px; color:#64748b; cursor:pointer; text-decoration:underline; opacity:0.6; border:none; background:none; font-family:var(--font); }
-        .footer .admin-link:hover { opacity:1; color:#94a3b8; }
-
-        .vish-float { animation: float-vish 2s ease-in-out infinite; display:inline-block; }
-        @keyframes float-vish { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-6px); } }
-
-        .sticky-bar {
-            position:fixed; bottom:0; left:0; right:0; z-index:90; background:var(--white); border-top:1px solid var(--gray-200);
-            padding:10px 12px; display:flex; gap:10px; box-shadow:0 -4px 20px rgba(0,0,0,0.10);
-            max-width:480px; margin:0 auto;
-        }
-        .floating-wa {
-            position:fixed; bottom:90px; right:16px; z-index:95; width:52px; height:52px; border-radius:50%;
-            background:#25d366; color:#fff; display:flex; align-items:center; justify-content:center; font-size:26px;
-            box-shadow:0 8px 28px rgba(37,211,102,0.45); text-decoration:none; animation:bounce-wa 2s infinite;
-        }
-        @keyframes bounce-wa { 0%,100%{transform:translateY(0);} 30%{transform:translateY(-8px);} 50%{transform:translateY(0);} 70%{transform:translateY(-5px);} }
-
-        .modal-overlay {
-            position:fixed; inset:0; z-index:200; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center;
-            opacity:0; pointer-events:none; transition:var(--transition-slow); padding:16px;
-        }
-        .modal-overlay.active { opacity:1; pointer-events:all; }
-        .modal {
-            background:var(--white); border-radius:var(--radius-lg); width:100%; max-width:500px; max-height:85vh; overflow-y:auto;
-            padding:24px 20px; box-shadow:var(--shadow-xl); position:relative;
-        }
-        .modal .close-btn {
-            position:absolute; top:16px; right:16px; width:36px; height:36px; border-radius:50%; border:none;
-            background:var(--gray-100); cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center;
-            transition:var(--transition); color:var(--gray-600);
-        }
-        .cart-item { display:flex; gap:12px; align-items:center; padding:10px 0; border-bottom:1px solid var(--gray-100); }
-        .cart-item-img { width:48px; height:48px; border-radius:var(--radius-xs); object-fit:cover; background:var(--gray-100); display:flex; align-items:center; justify-content:center; font-size:28px; }
-        .cart-item-info { flex:1; }
-        .qty-control { display:flex; align-items:center; gap:6px; margin-top:4px; }
-        .qty-btn { background:var(--gray-200); border:none; width:24px; height:24px; border-radius:50%; font-weight:700; cursor:pointer; font-size:14px; }
-        .cart-total { font-weight:800; font-size:18px; margin:16px 0; }
-        .btn-block { width:100%; margin-bottom:8px; }
-
-        .menu-popup-img { width: 100%; max-height: 240px; object-fit: cover; border-radius: var(--radius); margin-bottom: 16px; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 80px; }
-        .menu-popup-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-        .menu-popup-price { font-size: 24px; font-weight: 800; color: var(--orange-700); margin-bottom: 12px; }
-
-        .cat-celebration {
-            position:fixed; inset:0; z-index:300; display:flex; align-items:center; justify-content:center;
-            background:rgba(0,0,0,0.5); flex-direction:column; gap:12px; opacity:0; pointer-events:none;
-            transition:opacity 0.5s;
-        }
-        .cat-celebration.active { opacity:1; }
-        .cat-emoji { font-size:80px; animation:bounce-cat 1s ease-in-out infinite; }
-        @keyframes bounce-cat { 0%,100%{transform:translateY(0) rotate(0deg);} 25%{transform:translateY(-30px) rotate(-10deg);} 50%{transform:translateY(0) rotate(0deg);} 75%{transform:translateY(-20px) rotate(10deg);} }
-        .toast { position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:400; background:var(--gray-900); color:#fff; padding:12px 24px; border-radius:var(--radius-full); font-weight:600; font-size:13px; box-shadow:var(--shadow-lg); opacity:0; pointer-events:none; transition:opacity 0.3s; }
-        .toast.show { opacity:1; }
-    </style>
-</head>
-<body>
-
-<header class="header">
-    <div class="header-logo">
-        <div class="header-logo-icon">🍬</div>
-        <div class="header-logo-text"><h1>Shri Rajasthani</h1><span>Sweets & Namkeen</span></div>
+function renderMenuChart() {
+  const container = document.getElementById('menuItemsContainer');
+  container.innerHTML = menuItems.map(item => `
+    <div class="menu-item" data-id="${item.id}">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div class="menu-item-img">${item.image ? `<img src="${item.image}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;">` : '🍬'}</div>
+        <div>
+          <div style="font-weight:600;">${item.name}</div>
+          <div style="font-weight:700; color:var(--orange-700);">₹${item.price}</div>
+        </div>
+      </div>
+      <button class="btn" style="background:var(--orange-600); color:#fff;" data-id="${item.id}">➕ Add</button>
     </div>
-    <div class="header-actions">
-        <button class="cart-btn" id="cartToggle" aria-label="Cart">
-            🛒<span class="cart-badge" id="cartCount">0</span>
-        </button>
-        <div class="header-badge"><span class="dot"></span> Open Now</div>
-    </div>
-</header>
+  `).join('');
+  document.querySelectorAll('#menuItemsContainer .menu-item').forEach(el => {
+    el.addEventListener('click', function(e) {
+      if (e.target.closest('button')) return;
+      const item = menuItems.find(m => m.id === parseInt(this.dataset.id));
+      if (item) openMenuPopup(item);
+    });
+  });
+  document.querySelectorAll('#menuItemsContainer button').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const item = menuItems.find(m => m.id === parseInt(this.dataset.id));
+      if (item) addToCartFromMenu(item);
+    });
+  });
+}
 
-<div class="main-container">
-    <section class="hero">
-        <div class="hero-content">
-            <span class="hero-emoji">🍬</span>
-            <img id="heroImage" src="https://via.placeholder.com/280x280/ea580c/ffffff?text=Shri+Rajasthani+Sweets" alt="Shri Rajasthani Sweets" class="hero-image">
-            <h2>Authentic Rajasthani Sweets</h2>
-            <p class="hero-sub">Pure ghee mithai made fresh daily — since 2011</p>
-            <p class="hero-loc">📍 Waidhan, Singrauli, Madhya Pradesh</p>
-            <div class="hero-cta">
-                <a href="https://wa.me/919838696366?text=Hi%20Shri%20Rajasthani%20Sweets!%20I'd%20like%20to%20place%20an%20order." target="_blank" rel="noopener" class="btn btn-whatsapp">💬 Order on WhatsApp</a>
-                <a href="tel:+919838696366" class="btn btn-call">📞 Call Now</a>
-            </div>
-            <div class="hero-delivery-badge">🚀 Fast Home Delivery • 30-45 min</div>
+function openMenuPopup(item) {
+  currentPopupMenuItem = item;
+  document.getElementById('menuPopupName').textContent = item.name;
+  document.getElementById('menuPopupPrice').textContent = '₹' + item.price;
+  const imgDiv = document.getElementById('menuPopupImg');
+  imgDiv.innerHTML = item.image ? `<img src="${item.image}" style="width:100%; max-height:240px; object-fit:cover; border-radius:14px;">` : '🍬';
+  document.getElementById('menuPopupOverlay').classList.add('active');
+}
+
+function updateProductCount() { document.getElementById('productCount').textContent = products.length + ' Items'; }
+
+// ========== CART & ORDER LOGIC ==========
+function saveCart() { localStorage.setItem('srs_cart', JSON.stringify(cart)); updateCartBadge(); }
+function updateCartBadge() { document.getElementById('cartCount').textContent = cart.reduce((s,i) => s + i.qty, 0); }
+function addToCartFromProduct(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  const existing = cart.find(c => c.id === id && c.type === 'product');
+  if (existing) existing.qty++; else cart.push({id, type:'product', name:p.name, price:p.price, qty:1, image:p.image});
+  saveCart(); showToast(`${p.name} added`);
+}
+function addToCartFromMenu(item) {
+  const existing = cart.find(c => c.id === item.id && c.type === 'menu');
+  if (existing) existing.qty++; else cart.push({id:item.id, type:'menu', name:item.name, price:item.price, qty:1, image:item.image});
+  saveCart(); showToast(`${item.name} added`);
+}
+
+function renderCartModal() {
+  const container = document.getElementById('cartItemsContainer');
+  if (cart.length === 0) container.innerHTML = '<p style="text-align:center;">Cart empty</p>';
+  else {
+    container.innerHTML = cart.map((item, idx) => `
+      <div style="display:flex; gap:12px; align-items:center; padding:10px 0; border-bottom:1px solid #eee;">
+        <div style="width:48px;height:48px;border-radius:6px;background:#eee;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+          ${item.image ? `<img src="${item.image}" style="width:48px;height:48px;object-fit:cover;">` : '🍬'}
         </div>
-    </section>
-
-    <section class="section">
-        <div class="section-header"><span class="section-title"><span class="icon">🎉</span> Special Offers</span><span class="section-badge">Limited Time</span></div>
-        <div class="offers-scroll">
-            <div class="offer-card offer-1"><div class="offer-tag">Festive Offer</div><div class="offer-title">10% OFF on Sweets</div><div class="offer-sub">On orders above ₹300</div><span class="offer-icon">🍬</span></div>
-            <div class="offer-card offer-2"><div class="offer-tag">Combo</div><div class="offer-title">Family Sweet Box</div><div class="offer-sub">Kaju Katli + Gulab Jamun + Rasgulla</div><span class="offer-icon">🎁</span></div>
-            <div class="offer-card offer-3"><div class="offer-tag">Delivery</div><div class="offer-title">Free Home Delivery</div><div class="offer-sub">On orders above ₹500</div><span class="offer-icon">🛵</span></div>
+        <div style="flex:1;">
+          <div style="font-weight:600;">${item.name}</div>
+          <div>₹${item.price} x ${item.qty} = ₹${item.price * item.qty}</div>
         </div>
-    </section>
+        <button style="background:none;border:none;cursor:pointer;" data-idx="${idx}" data-action="remove">🗑️</button>
+      </div>`).join('');
+  }
+  document.getElementById('cartTotal').textContent = 'Total: ₹' + cart.reduce((s,i) => s + i.price * i.qty, 0);
+}
 
-    <section class="section" style="padding-top:8px;">
-        <div class="section-header"><span class="section-title"><span class="icon">📦</span> Categories</span></div>
-        <div class="cat-scroll" id="catPills">
-            <button class="cat-pill active" data-cat="all">🛍️ All</button>
-            <button class="cat-pill" data-cat="mithai">🍬 Mithai</button>
-            <button class="cat-pill" data-cat="dryfruit">🥜 Dry Fruit Sweets</button>
-            <button class="cat-pill" data-cat="namkeen">🍘 Namkeen</button>
-            <button class="cat-pill" data-cat="combo">🎁 Combo Packs</button>
-        </div>
-    </section>
+function renderOrdersList() {
+  const cont = document.getElementById('adminOrdersList');
+  if (orders.length === 0) cont.innerHTML = '<p>No orders yet.</p>';
+  else cont.innerHTML = orders.map(o => `
+    <div style="border:1px solid #ddd; padding:10px; margin-bottom:8px;">
+      <b>${o.timestamp ? new Date(o.timestamp.seconds * 1000).toLocaleString() : ''}</b><br>
+      ${o.customer?.name}, ${o.customer?.phone}<br>
+      ${o.customer?.address}<br>
+      Items: ${o.items ? o.items.map(i => i.name + ' x' + i.qty).join(', ') : ''}<br>
+      Total: ₹${o.total}
+    </div>`).join('');
+}
 
-    <section class="section" style="padding-top:4px;">
-        <div class="section-header"><span class="section-title"><span class="icon">🛍️</span> Our Products</span><span id="productCount" class="section-badge">20+ Items</span></div>
-        <div class="product-grid" id="productGrid"></div>
-    </section>
+// ========== EVENT LISTENERS ==========
+function setupEventListeners() {
+  document.getElementById('catPills').addEventListener('click', e => {
+    const pill = e.target.closest('.cat-pill');
+    if (!pill) return;
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    currentCategory = pill.dataset.cat;
+    renderProducts();
+  });
 
-    <section class="section" style="padding-top:8px;">
-        <div class="menu-chart" id="menuChart">
-            <h3>📋 Full Menu Chart</h3>
-            <div id="menuItemsContainer"></div>
-        </div>
-    </section>
+  document.getElementById('cartToggle').addEventListener('click', () => {
+    renderCartModal();
+    document.getElementById('cartModalOverlay').classList.add('active');
+  });
+  document.getElementById('cartClose').addEventListener('click', () => document.getElementById('cartModalOverlay').classList.remove('active'));
+  document.getElementById('cartClear').addEventListener('click', () => { cart = []; saveCart(); renderCartModal(); });
+  document.getElementById('cartProceed').addEventListener('click', () => {
+    if (cart.length === 0) return;
+    document.getElementById('cartModalOverlay').classList.remove('active');
+    document.getElementById('checkoutModalOverlay').classList.add('active');
+    document.getElementById('shopOnlineForm').style.display = 'none';
+  });
+  document.getElementById('cartItemsContainer').addEventListener('click', function(e) {
+    const btn = e.target.closest('button[data-idx]');
+    if (!btn) return;
+    cart.splice(parseInt(btn.dataset.idx), 1);
+    saveCart();
+    renderCartModal();
+  });
 
-    <section class="section">
-        <div class="trust-section">
-            <div class="trust-years">13+</div><p style="font-weight:600;">Years of Sweetening Waidhan</p>
-            <div class="trust-stats">
-                <div class="trust-stat"><div class="num">10,000+</div><div class="label">Happy Customers</div></div>
-                <div class="trust-stat"><div class="num">80+</div><div class="label">Varieties</div></div>
-                <div class="trust-stat"><div class="num">25,000+</div><div class="label">Orders Delivered</div></div>
-            </div>
-            <div style="display:flex; gap:12px; overflow-x:auto; margin-top:16px; scrollbar-width:none;">
-                <div style="min-width:230px; background:var(--gray-50); padding:14px; border-radius:var(--radius);">⭐⭐⭐⭐⭐<br>"Best Kaju Katli in town! Pure ghee taste."<br><small>— Ramesh G.</small></div>
-                <div style="min-width:230px; background:var(--gray-50); padding:14px; border-radius:var(--radius);">⭐⭐⭐⭐⭐<br>"Always fresh sweets, quick delivery."<br><small>— Suman P.</small></div>
-                <div style="min-width:230px; background:var(--gray-50); padding:14px; border-radius:var(--radius);">⭐⭐⭐⭐⭐<br>"Gulab Jamun are heavenly!"<br><small>— Vikram S.</small></div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section">
-        <div class="delivery-highlight"><span style="font-size:40px;">🛵</span><div><h4>Free Home Delivery</h4><p>On orders above ₹500 within Waidhan & nearby areas.</p></div></div>
-    </section>
-
-    <section class="section">
-        <div class="section-header"><span class="section-title"><span class="icon">📍</span> Visit Our Store</span></div>
-        <div class="map-container">
-            <iframe src="https://www.google.com/maps?q=Waidhan+Singrauli+Madhya+Pradesh&output=embed" allowfullscreen loading="lazy" title="Store Location"></iframe>
-        </div>
-        <p style="text-align:center; font-size:12px; color:var(--gray-500);">Waidhan, Singrauli, Madhya Pradesh 486886</p>
-    </section>
-</div>
-
-<footer class="footer">
-    <p class="store-name">Shri Rajasthani Sweets</p>
-    <p>📍 Waidhan, Singrauli, MP | 📞 <a href="tel:+919838696366">+91 98386 96366</a></p>
-    <p>⏰ Open: 7 AM – 10 PM | All Days</p>
-    <p style="font-size:12px; margin-top:8px; opacity:0.8;">Made with 💛 from</p>
-    <p class="vish-float" style="font-size:18px; font-weight:700; letter-spacing:1px; color:var(--amber-400); margin-bottom:4px;">VISH</p>
-    <button class="admin-link" id="adminTrigger">🔒 Store Admin</button>
-</footer>
-
-<div class="sticky-bar" id="stickyBar">
-    <a href="https://wa.me/919838696366?text=Hi%20Shri%20Rajasthani%20Sweets!%20I'd%20like%20to%20place%20an%20order." target="_blank" rel="noopener" class="btn btn-whatsapp" style="flex:1;">💬 WhatsApp Order</a>
-    <a href="tel:+919838696366" class="btn btn-call" style="background:var(--gray-900); color:#fff; border-color:var(--gray-900); flex:1;">📞 Call Now</a>
-</div>
-<a href="https://wa.me/919838696366?text=Hi%20Shri%20Rajasthani%20Sweets!%20I'd%20like%20to%20place%20an%20order." target="_blank" rel="noopener" class="floating-wa">💬</a>
-
-<!-- Cart Modal -->
-<div class="modal-overlay" id="cartModalOverlay">
-    <div class="modal" id="cartModal">
-        <button class="close-btn" id="cartClose">✕</button>
-        <h3>🛒 Your Cart</h3>
-        <div id="cartItemsContainer"></div>
-        <div class="cart-total" id="cartTotal">Total: ₹0</div>
-        <button class="btn btn-block" id="cartProceed" style="background:var(--orange-600); color:#fff;">Proceed to Checkout</button>
-        <button class="btn btn-block" id="cartClear" style="background:var(--gray-200); color:var(--gray-700);">Clear Cart</button>
-    </div>
-</div>
-
-<!-- Checkout Modal -->
-<div class="modal-overlay" id="checkoutModalOverlay">
-    <div class="modal" id="checkoutModal">
-        <button class="close-btn" id="checkoutClose">✕</button>
-        <h3>Choose Checkout Option</h3>
-        <button class="btn btn-block" id="whatsappCheckout" style="background:#25d366; color:#fff;">💬 WhatsApp Order</button>
-        <p style="text-align:center; margin:12px 0; color:var(--gray-500);">— OR —</p>
-        <button class="btn btn-block" id="shopOnlineBtn" style="background:var(--orange-600); color:#fff;">🛒 Shop Online (Home Delivery)</button>
-        <div id="shopOnlineForm" style="display:none; margin-top:16px;">
-            <h4>Delivery Details</h4>
-            <div class="form-group"><label>Full Name *</label><input type="text" id="custName" placeholder="Your name"></div>
-            <div class="form-group"><label>Phone Number *</label><input type="tel" id="custPhone" placeholder="10-digit mobile"></div>
-            <div class="form-group"><label>Delivery Address *</label><textarea id="custAddress" rows="2" placeholder="House no, colony, landmark..."></textarea></div>
-            <button class="btn btn-block" id="placeOrderBtn" style="background:var(--amber-600); color:#fff;">Place Order</button>
-        </div>
-    </div>
-</div>
-
-<!-- Menu Item Popup Modal -->
-<div class="modal-overlay" id="menuPopupOverlay">
-    <div class="modal" id="menuPopupModal" style="text-align:center;">
-        <button class="close-btn" id="menuPopupClose">✕</button>
-        <div class="menu-popup-img" id="menuPopupImg"></div>
-        <div class="menu-popup-name" id="menuPopupName"></div>
-        <div class="menu-popup-price" id="menuPopupPrice"></div>
-        <button class="btn btn-block" id="menuPopupAddToCart" style="background:var(--orange-600); color:#fff;">🛒 Add to Cart</button>
-    </div>
-</div>
-
-<!-- Cat Celebration overlay -->
-<div class="cat-celebration" id="catCelebration">
-    <span class="cat-emoji">🐱</span>
-    <div style="color:#fff; font-size:24px; font-weight:700;">Thank You!</div>
-    <div style="color:#fcd34d; font-size:18px;">Shop again 🛍️</div>
-</div>
-
-<!-- Admin Password Modal -->
-<div class="modal-overlay" id="passwordModalOverlay">
-    <div class="modal" style="max-width:380px; text-align:center;">
-        <h3>🔐 Enter Admin Password</h3>
-        <div class="form-group"><input type="password" id="passwordInput" placeholder="Password" style="text-align:center; font-size:16px;"></div>
-        <button class="btn-submit" id="btnPasswordSubmit">Unlock Admin Panel</button>
-    </div>
-</div>
-
-<!-- Admin Panel Modal -->
-<div class="modal-overlay" id="adminModalOverlay">
-    <div class="modal" id="adminModal" style="max-width:600px;">
-        <button class="close-btn" id="adminClose">✕</button>
-        <h3>🔒 Admin Panel</h3>
-        <p style="font-size:12px; color:var(--gray-500); margin-bottom:12px;">Changes here are only visible on this device. To update for all visitors, edit the products.json and menu.json files on GitHub.</p>
-        <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
-            <button id="adminTabProducts" class="btn" style="background:var(--orange-600); color:#fff; padding:8px 16px;">📦 Products</button>
-            <button id="adminTabOrders" class="btn" style="background:var(--gray-200); padding:8px 16px;">📋 Orders</button>
-            <button id="adminTabMenu" class="btn" style="background:var(--gray-200); padding:8px 16px;">📋 Menu Chart</button>
-        </div>
-
-        <div id="adminProductsSection">
-            <div style="background:var(--orange-50); border-radius:var(--radius); padding:16px; margin-bottom:12px; border:1px solid var(--orange-100);">
-                <h4>➕ Add New Product (local preview)</h4>
-                <div class="form-group"><label>Product Name *</label><input type="text" id="addName" placeholder="e.g., Kaju Katli"></div>
-                <div class="form-group"><label>Category *</label><select id="addCategory"><option value="mithai">🍬 Mithai</option><option value="dryfruit">🥜 Dry Fruit Sweets</option><option value="namkeen">🍘 Namkeen</option><option value="combo">🎁 Combo Packs</option></select></div>
-                <div class="form-group"><label>Price (₹) *</label><input type="number" id="addPrice" placeholder="500" min="1"></div>
-                <div class="form-group"><label>Description</label><input type="text" id="addDesc" placeholder="Short description"></div>
-                <div class="form-group"><label>Image URL (optional)</label><input type="text" id="addImageUrl" placeholder="https://..."></div>
-                <div class="form-group"><label>Or Upload Image</label><input type="file" id="addImageFile" accept="image/*"></div>
-                <button class="btn-submit" id="btnAddProduct" style="background:var(--orange-600);">✅ Add Product</button>
-            </div>
-            <h4>📋 Current Products (local)</h4>
-            <ul class="admin-product-list" id="adminProductList"></ul>
-        </div>
-
-        <div id="adminOrdersSection" style="display:none;">
-            <h4>📋 Recent Orders (local)</h4>
-            <div id="adminOrdersList"></div>
-        </div>
-
-        <div id="adminMenuSection" style="display:none;">
-            <div style="background:var(--orange-50); border-radius:var(--radius); padding:16px; margin-bottom:12px; border:1px solid var(--orange-100);">
-                <h4>➕ Add Menu Item (local preview)</h4>
-                <div class="form-group"><label>Item Name *</label><input type="text" id="menuAddName" placeholder="e.g., Paneer Jalebi"></div>
-                <div class="form-group"><label>Price (₹) *</label><input type="number" id="menuAddPrice" placeholder="120" min="1"></div>
-                <div class="form-group"><label>Image URL (optional)</label><input type="text" id="menuAddImageUrl" placeholder="https://..."></div>
-                <div class="form-group"><label>Or Upload Image</label><input type="file" id="menuAddImageFile" accept="image/*"></div>
-                <button class="btn-submit" id="btnAddMenuItem" style="background:var(--orange-600);">✅ Add Menu Item</button>
-            </div>
-            <h4>📋 Current Menu Items (local)</h4>
-            <ul class="admin-product-list" id="adminMenuList"></ul>
-        </div>
-
-        <!-- Hero Image Setting -->
-        <div style="border-top:1px solid var(--gray-200); margin-top:18px; padding-top:14px;">
-            <h4>🖼️ Hero Image</h4>
-            <div class="form-group"><label>Image URL</label><input type="text" id="heroImageUrl" placeholder="https://..."></div>
-            <button class="btn-submit" id="btnUpdateHeroImage" style="background:var(--amber-600);">Update Hero Image</button>
-        </div>
-
-        <div class="password-section">
-            <h4>🔑 Change Admin Password</h4>
-            <div class="form-group"><label>New Password</label><input type="text" id="newPassword" placeholder="New password"></div>
-            <button class="btn-submit" id="btnChangePassword" style="background:var(--amber-600);">Update Password</button>
-        </div>
-    </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-(function() {
-    const CONFIG = {
-        storeName: 'Shri Rajasthani Sweets',
-        location: 'Waidhan, Singrauli, Madhya Pradesh',
-        whatsappNumber: '919838696366',
-        phoneNumber: '+919838696366',
-        defaultPassword: 'Vish0617',
-        storageKey: 'srs_products',
-        menuStorageKey: 'srs_menu_items',
-        passwordKey: 'srs_admin_password',
-        cartKey: 'srs_cart',
-        ordersKey: 'srs_orders',
-        heroImageKey: 'srs_hero_image',
-        // ⚠️ CHANGE THESE TWO LINES TO YOUR ACTUAL GITHUB USERNAME AND REPO NAME
-        productsUrl: 'https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/products.json',
-        menuUrl: 'https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/menu.json',
-        minDeliveryOrder: 500,
+  document.getElementById('checkoutClose').addEventListener('click', () => document.getElementById('checkoutModalOverlay').classList.remove('active'));
+  document.getElementById('whatsappCheckout').addEventListener('click', () => {
+    let msg = `🛒 *Order from Shri Rajasthani Sweets*%0A`;
+    cart.forEach((item, i) => msg += `${i+1}. ${item.name} - ₹${item.price} x ${item.qty} = ₹${item.price * item.qty}%0A`);
+    msg += `%0A*Total: ₹${cart.reduce((s,i) => s + i.price * i.qty, 0)}*`;
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
+    document.getElementById('checkoutModalOverlay').classList.remove('active');
+  });
+  document.getElementById('shopOnlineBtn').addEventListener('click', () => document.getElementById('shopOnlineForm').style.display = 'block');
+  document.getElementById('placeOrderBtn').addEventListener('click', async () => {
+    const name = document.getElementById('custName').value.trim();
+    const phone = document.getElementById('custPhone').value.trim();
+    const addr = document.getElementById('custAddress').value.trim();
+    if (!name || !phone || !addr) { showToast('Please fill all delivery details'); return; }
+    const order = {
+      customer: { name, phone, address: addr },
+      items: [...cart],
+      total: cart.reduce((s,i) => s + i.price * i.qty, 0),
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
     };
+    await saveOrderToFirestore(order);
+    cart = []; saveCart();
+    document.getElementById('checkoutModalOverlay').classList.remove('active');
+    document.getElementById('custName').value = ''; document.getElementById('custPhone').value = ''; document.getElementById('custAddress').value = '';
+    showToast('Order placed! 🐱');
+  });
 
-    let products = [];
-    let menuItems = [];
-    let cart = [];
-    let orders = [];
-    let adminPassword = CONFIG.defaultPassword;
-    let currentCategory = 'all';
-    let nextProductId = 100;
-    let nextMenuItemId = 400;
-    let currentPopupMenuItem = null;
+  document.getElementById('menuPopupClose').addEventListener('click', () => document.getElementById('menuPopupOverlay').classList.remove('active'));
+  document.getElementById('menuPopupAddToCart').addEventListener('click', () => {
+    if (currentPopupMenuItem) {
+      addToCartFromMenu(currentPopupMenuItem);
+      document.getElementById('menuPopupOverlay').classList.remove('active');
+    }
+  });
 
-    async function init() {
-        loadPassword();
-        await loadProducts();
-        await loadMenuItems();
-        loadCart();
-        loadOrders();
-        loadHeroImage();
-        renderProducts();
-        renderMenuChart();
-        updateCartCount();
-        setupEventListeners();
-        updateProductCount();
-        updateWhatsAppLinks();
+  // Admin
+  document.getElementById('adminTrigger').addEventListener('click', () => {
+    document.getElementById('passwordModalOverlay').classList.add('active');
+    document.getElementById('passwordInput').value = '';
+  });
+  document.getElementById('btnPasswordSubmit').addEventListener('click', () => {
+    if (document.getElementById('passwordInput').value === ADMIN_PASSWORD) {
+      document.getElementById('passwordModalOverlay').classList.remove('active');
+      document.getElementById('adminModalOverlay').classList.add('active');
+      document.getElementById('adminTabProducts').click();
+    } else showToast('Wrong password');
+  });
+  document.getElementById('adminClose').addEventListener('click', () => document.getElementById('adminModalOverlay').classList.remove('active'));
+
+  document.getElementById('adminTabProducts').addEventListener('click', () => setActiveAdminTab('products'));
+  document.getElementById('adminTabOrders').addEventListener('click', () => { setActiveAdminTab('orders'); renderOrdersList(); });
+  document.getElementById('adminTabMenu').addEventListener('click', () => { setActiveAdminTab('menu'); renderAdminMenuList(); });
+
+  // Admin: add product (with ImgBB upload)
+  document.getElementById('btnAddProduct').addEventListener('click', async () => {
+    const name = document.getElementById('addName').value.trim();
+    const cat = document.getElementById('addCategory').value;
+    const price = parseInt(document.getElementById('addPrice').value);
+    const imgFile = document.getElementById('addImageFile').files[0];
+    const imgUrl = document.getElementById('addImageUrl').value.trim();
+
+    if (!name || isNaN(price)) { showToast('Enter valid details'); return; }
+
+    let image = imgUrl;
+    if (imgFile) {
+      document.getElementById('addProductSpinner').style.display = 'inline-block';
+      try {
+        image = await uploadImageToImgBB(imgFile);
+      } catch (e) {
+        showToast('Image upload failed: ' + e);
+      }
+      document.getElementById('addProductSpinner').style.display = 'none';
     }
 
-    function loadPassword() { const stored = localStorage.getItem(CONFIG.passwordKey); if(stored) adminPassword = stored; }
-    function savePassword(pw) { adminPassword = pw; localStorage.setItem(CONFIG.passwordKey, pw); }
+    products.unshift({id: nextProductId++, name, category:cat, price, desc:'', image});
+    await saveProductsToFirestore();
+    document.getElementById('addName').value = ''; document.getElementById('addPrice').value = '';
+    document.getElementById('addImageUrl').value = ''; document.getElementById('addImageFile').value = '';
+    showToast('Product added!');
+  });
 
-    async function loadProducts() {
-        try {
-            const response = await fetch(CONFIG.productsUrl);
-            if (!response.ok) throw new Error('Failed to fetch products');
-            products = await response.json();
-            nextProductId = Math.max(...products.map(p => p.id), 99) + 1;
-        } catch (e) {
-            console.warn('Could not load products.json, using localStorage fallback');
-            const stored = localStorage.getItem(CONFIG.storageKey);
-            if (stored) {
-                try {
-                    products = JSON.parse(stored);
-                    nextProductId = Math.max(...products.map(p => p.id), 99) + 1;
-                } catch (e2) {
-                    products = [];
-                }
-            } else {
-                products = [];
-            }
-        }
-        // Merge localStorage additions (preview) on top of fetched products
-        const localStored = localStorage.getItem(CONFIG.storageKey);
-        if (localStored) {
-            try {
-                const localProducts = JSON.parse(localStored);
-                // Add any local product not already in fetched list (by id)
-                localProducts.forEach(lp => {
-                    if (!products.find(p => p.id === lp.id)) {
-                        products.push(lp);
-                    }
-                });
-                nextProductId = Math.max(nextProductId, ...localProducts.map(p => p.id) + 1);
-            } catch (e) {}
-        }
-        saveProductsLocal();
+  document.getElementById('adminProductList').addEventListener('click', async (e) => {
+    if (e.target.dataset.delete) {
+      const id = parseInt(e.target.dataset.delete);
+      products = products.filter(p => p.id !== id);
+      await saveProductsToFirestore();
+    }
+  });
+
+  // Admin: add menu item (with ImgBB upload)
+  document.getElementById('btnAddMenuItem').addEventListener('click', async () => {
+    const name = document.getElementById('menuAddName').value.trim();
+    const price = parseInt(document.getElementById('menuAddPrice').value);
+    const imgFile = document.getElementById('menuAddImageFile').files[0];
+    const imgUrl = document.getElementById('menuAddImageUrl').value.trim();
+
+    if (!name || isNaN(price)) { showToast('Enter valid details'); return; }
+
+    let image = imgUrl;
+    if (imgFile) {
+      document.getElementById('menuAddSpinner').style.display = 'inline-block';
+      try {
+        image = await uploadImageToImgBB(imgFile);
+      } catch (e) {
+        showToast('Image upload failed: ' + e);
+      }
+      document.getElementById('menuAddSpinner').style.display = 'none';
     }
 
-    function saveProductsLocal() {
-        localStorage.setItem(CONFIG.storageKey, JSON.stringify(products));
+    menuItems.unshift({id: nextMenuItemId++, name, price, image});
+    await saveMenuItemsToFirestore();
+    document.getElementById('menuAddName').value = ''; document.getElementById('menuAddPrice').value = '';
+    document.getElementById('menuAddImageUrl').value = ''; document.getElementById('menuAddImageFile').value = '';
+    showToast('Menu item added!');
+  });
+
+  document.getElementById('adminMenuList').addEventListener('click', async (e) => {
+    if (e.target.dataset.deleteMenu) {
+      const id = parseInt(e.target.dataset.deleteMenu);
+      menuItems = menuItems.filter(m => m.id !== id);
+      await saveMenuItemsToFirestore();
+    }
+  });
+
+  // Hero image update (with ImgBB upload)
+  document.getElementById('btnUpdateHeroImage').addEventListener('click', async () => {
+    const imgFile = document.getElementById('heroImageFile').files[0];
+    const imgUrl = document.getElementById('heroImageUrl').value.trim();
+
+    let url = imgUrl;
+    if (imgFile) {
+      document.getElementById('heroSpinner').style.display = 'inline-block';
+      try {
+        url = await uploadImageToImgBB(imgFile);
+      } catch (e) {
+        showToast('Image upload failed: ' + e);
+      }
+      document.getElementById('heroSpinner').style.display = 'none';
     }
 
-    async function loadMenuItems() {
-        try {
-            const response = await fetch(CONFIG.menuUrl);
-            if (!response.ok) throw new Error('Failed to fetch menu');
-            menuItems = await response.json();
-            nextMenuItemId = Math.max(...menuItems.map(m => m.id), 399) + 1;
-        } catch (e) {
-            console.warn('Could not load menu.json, using localStorage fallback');
-            const stored = localStorage.getItem(CONFIG.menuStorageKey);
-            if (stored) {
-                try {
-                    menuItems = JSON.parse(stored);
-                    nextMenuItemId = Math.max(...menuItems.map(m => m.id), 399) + 1;
-                } catch (e2) {
-                    menuItems = [];
-                }
-            } else {
-                menuItems = [];
-            }
-        }
-        const localStored = localStorage.getItem(CONFIG.menuStorageKey);
-        if (localStored) {
-            try {
-                const localMenu = JSON.parse(localStored);
-                localMenu.forEach(lm => {
-                    if (!menuItems.find(m => m.id === lm.id)) {
-                        menuItems.push(lm);
-                    }
-                });
-                nextMenuItemId = Math.max(nextMenuItemId, ...localMenu.map(m => m.id) + 1);
-            } catch (e) {}
-        }
-        saveMenuItemsLocal();
+    if (url) {
+      document.getElementById('heroImage').src = url;
+      await saveHeroImageToFirestore(url);
+      document.getElementById('heroImageUrl').value = '';
+      document.getElementById('heroImageFile').value = '';
+      showToast('Hero image updated!');
+    } else {
+      showToast('Please provide a file or URL');
     }
+  });
 
-    function saveMenuItemsLocal() {
-        localStorage.setItem(CONFIG.menuStorageKey, JSON.stringify(menuItems));
-    }
+  function setActiveAdminTab(tab) {
+    document.getElementById('adminProductsSection').style.display = tab === 'products' ? 'block' : 'none';
+    document.getElementById('adminOrdersSection').style.display = tab === 'orders' ? 'block' : 'none';
+    document.getElementById('adminMenuSection').style.display = tab === 'menu' ? 'block' : 'none';
+    ['adminTabProducts','adminTabOrders','adminTabMenu'].forEach(id => {
+      document.getElementById(id).style.background = 'var(--gray-200)';
+      document.getElementById(id).style.color = 'var(--gray-700)';
+    });
+    const activeBtn = document.getElementById('adminTab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+    activeBtn.style.background = 'var(--orange-600)';
+    activeBtn.style.color = '#fff';
+    if (tab === 'products') renderAdminProductList();
+    if (tab === 'menu') renderAdminMenuList();
+  }
+}
 
-    function loadCart() { const stored = localStorage.getItem(CONFIG.cartKey); cart = stored ? JSON.parse(stored) : []; }
-    function saveCart() { localStorage.setItem(CONFIG.cartKey, JSON.stringify(cart)); }
-    function loadOrders() { const stored = localStorage.getItem(CONFIG.ordersKey); orders = stored ? JSON.parse(stored) : []; }
-    function saveOrders() { localStorage.setItem(CONFIG.ordersKey, JSON.stringify(orders)); }
+function renderAdminProductList() {
+  const list = document.getElementById('adminProductList');
+  list.innerHTML = products.map(p => `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;"><span>${p.name} (₹${p.price})</span><button style="color:red; border:none; background:none; cursor:pointer;" data-delete="${p.id}">🗑️</button></div>`).join('');
+}
+function renderAdminMenuList() {
+  const list = document.getElementById('adminMenuList');
+  list.innerHTML = menuItems.map(m => `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;"><span>${m.name} (₹${m.price})</span><button style="color:red; border:none; background:none; cursor:pointer;" data-delete-menu="${m.id}">🗑️</button></div>`).join('');
+}
 
-    function loadHeroImage() {
-        const stored = localStorage.getItem(CONFIG.heroImageKey);
-        if(stored) { document.getElementById('heroImage').src = stored; }
-    }
-    function saveHeroImage(url) {
-        localStorage.setItem(CONFIG.heroImageKey, url);
-        document.getElementById('heroImage').src = url;
-    }
+function bindAddToCart() {
+  document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      addToCartFromProduct(parseInt(this.dataset.id));
+    });
+  });
+}
 
-    function updateWhatsAppLinks() {
-        const waNum = CONFIG.whatsappNumber;
-        const prefill = `Hi%20Shri%20Rajasthani%20Sweets!%20I'd%20like%20to%20place%20an%20order.`;
-        const waBase = `https://wa.me/${waNum}?text=${prefill}`;
-        document.querySelectorAll('a[href*="wa.me"]').forEach(l=>{ l.href = waBase; });
-        document.querySelectorAll('a[href^="tel:"]').forEach(l=>{ l.href = `tel:${CONFIG.phoneNumber}`; });
-    }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
 
-    function getCategoryEmoji(cat) { const map={mithai:'🍬',dryfruit:'🥜',namkeen:'🍘',combo:'🎁'}; return map[cat]||'🍬'; }
-
-    function renderProducts() {
-        const grid = document.getElementById('productGrid');
-        let filtered = currentCategory === 'all' ? products : products.filter(p=>p.category===currentCategory);
-        if(filtered.length===0) {
-            grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--gray-400);">No products in this category yet.</div>';
-        } else {
-            grid.innerHTML = filtered.map(p => {
-                const emoji = getCategoryEmoji(p.category);
-                const imgHTML = p.image ? `<img src="${p.image}" alt="${p.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><span class="placeholder-emoji" style="display:none;">${emoji}</span>` : `<span class="placeholder-emoji">${emoji}</span>`;
-                return `
-                <div class="product-card" data-id="${p.id}">
-                    <div class="product-img">${imgHTML}</div>
-                    <div class="product-info">
-                        <span class="product-cat-label">${p.category}</span>
-                        <span class="product-name">${p.name}</span>
-                        <span class="product-price">₹${p.price}</span>
-                        <button class="add-to-cart-btn" data-id="${p.id}">➕ Add to Cart</button>
-                    </div>
-                </div>`;
-            }).join('');
-        }
-        bindAddToCartButtons();
-    }
-
-    function renderMenuChart() {
-        const container = document.getElementById('menuItemsContainer');
-        if (!container) return;
-        container.innerHTML = menuItems.map(item => `
-            <div class="menu-item" data-id="${item.id}">
-                <div class="menu-item-left">
-                    <div class="menu-item-img">${item.image ? `<img src="${item.image}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;">` : '🍬'}</div>
-                    <div class="menu-item-details">
-                        <span class="menu-item-name">${item.name}</span>
-                        <span class="menu-item-price">₹${item.price}</span>
-                    </div>
-                </div>
-                <button class="menu-add-btn" data-id="${item.id}">➕ Add</button>
-            </div>
-        `).join('');
-        document.querySelectorAll('#menuItemsContainer .menu-item').forEach(el => {
-            el.addEventListener('click', function(e) {
-                if (e.target.closest('.menu-add-btn')) return;
-                const id = parseInt(this.dataset.id);
-                const item = menuItems.find(m => m.id === id);
-                if (item) openMenuPopup(item);
-            });
-        });
-        document.querySelectorAll('.menu-add-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const id = parseInt(this.dataset.id);
-                const item = menuItems.find(m => m.id === id);
-                if (item) {
-                    addToCartFromMenu(item);
-                    animateFlyToCart(this);
-                }
-            });
-        });
-    }
-
-    function openMenuPopup(item) {
-        currentPopupMenuItem = item;
-        document.getElementById('menuPopupName').textContent = item.name;
-        document.getElementById('menuPopupPrice').textContent = '₹' + item.price;
-        const imgContainer = document.getElementById('menuPopupImg');
-        if (item.image) {
-            imgContainer.innerHTML = `<img src="${item.image}" style="width:100%; max-height:240px; object-fit:cover; border-radius:var(--radius);">`;
-        } else {
-            imgContainer.innerHTML = '🍬';
-            imgContainer.style.fontSize = '80px';
-        }
-        document.getElementById('menuPopupOverlay').classList.add('active');
-    }
-
-    function addToCartFromMenu(item) {
-        const existing = cart.find(cartItem => cartItem.id === item.id && cartItem.type === 'menu');
-        if (existing) { existing.qty += 1; }
-        else { cart.push({ id: item.id, type: 'menu', name: item.name, price: item.price, qty: 1, image: item.image }); }
-        saveCart();
-        updateCartCount();
-        showToast(`${item.name} added to cart`);
-    }
-
-    function bindAddToCartButtons() {
-        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const id = parseInt(this.dataset.id);
-                addToCartFromProduct(id);
-                animateFlyToCart(this);
-            });
-        });
-    }
-
-    function addToCartFromProduct(productId) {
-        const product = products.find(p=>p.id===productId);
-        if(!product) return;
-        const existing = cart.find(item=>item.id===productId && item.type==='product');
-        if(existing) { existing.qty += 1; }
-        else { cart.push({ id: product.id, type:'product', name: product.name, price: product.price, qty:1, image: product.image }); }
-        saveCart();
-        updateCartCount();
-        showToast(`${product.name} added to cart`);
-    }
-
-    function animateFlyToCart(button) {
-        const cartBtn = document.getElementById('cartToggle');
-        const btnRect = button.getBoundingClientRect();
-        const cartRect = cartBtn.getBoundingClientRect();
-        const fly = document.createElement('div');
-        fly.className = 'cart-fly';
-        fly.textContent = '🛒';
-        fly.style.left = btnRect.left + btnRect.width/2 - 20 + 'px';
-        fly.style.top = btnRect.top + btnRect.height/2 - 20 + 'px';
-        document.body.appendChild(fly);
-        requestAnimationFrame(() => {
-            fly.style.left = cartRect.left + cartRect.width/2 - 20 + 'px';
-            fly.style.top = cartRect.top + cartRect.height/2 - 20 + 'px';
-            fly.style.transform = 'scale(0.5)';
-        });
-        setTimeout(() => { fly.remove(); }, 650);
-    }
-
-    function updateCartCount() {
-        const count = cart.reduce((sum,item)=>sum+item.qty,0);
-        document.getElementById('cartCount').textContent = count;
-    }
-
-    function renderCartModal() {
-        const container = document.getElementById('cartItemsContainer');
-        if(cart.length===0) {
-            container.innerHTML = '<p style="text-align:center; color:gray;">Your cart is empty</p>';
-            document.getElementById('cartTotal').textContent = 'Total: ₹0';
-        } else {
-            container.innerHTML = cart.map((item, idx) => `
-                <div class="cart-item">
-                    <div class="cart-item-img">${item.image ? `<img src="${item.image}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;">` : '🍬'}</div>
-                    <div class="cart-item-info">
-                        <div class="cart-item-name">${item.name}</div>
-                        <div class="cart-item-price">₹${item.price} x ${item.qty} = ₹${item.price * item.qty}</div>
-                        <div class="qty-control">
-                            <button class="qty-btn" data-idx="${idx}" data-action="minus">−</button>
-                            <span>${item.qty}</span>
-                            <button class="qty-btn" data-idx="${idx}" data-action="plus">+</button>
-                        </div>
-                    </div>
-                    <button style="background:none; border:none; font-size:20px; cursor:pointer;" data-idx="${idx}" data-action="remove">🗑️</button>
-                </div>
-            `).join('');
-            const total = cart.reduce((sum,i)=>sum + i.price*i.qty, 0);
-            document.getElementById('cartTotal').textContent = `Total: ₹${total}`;
-        }
-    }
-
-    function setupEventListeners() {
-        document.getElementById('catPills').addEventListener('click', function(e) {
-            const pill = e.target.closest('.cat-pill'); if(!pill) return;
-            document.querySelectorAll('.cat-pill').forEach(p=>p.classList.remove('active'));
-            pill.classList.add('active');
-            currentCategory = pill.dataset.cat;
-            renderProducts();
-        });
-
-        document.getElementById('cartToggle').addEventListener('click', ()=>{
-            renderCartModal();
-            document.getElementById('cartModalOverlay').classList.add('active');
-        });
-        document.getElementById('cartClose').addEventListener('click', ()=> document.getElementById('cartModalOverlay').classList.remove('active'));
-        document.getElementById('cartModalOverlay').addEventListener('click', function(e){ if(e.target===this) this.classList.remove('active'); });
-
-        document.getElementById('cartItemsContainer').addEventListener('click', function(e) {
-            const btn = e.target.closest('button'); if(!btn) return;
-            const idx = parseInt(btn.dataset.idx);
-            if(btn.dataset.action === 'plus') { cart[idx].qty += 1; }
-            else if(btn.dataset.action === 'minus') { if(cart[idx].qty>1) cart[idx].qty -= 1; else { cart.splice(idx,1); } }
-            else if(btn.dataset.action === 'remove') { cart.splice(idx,1); }
-            saveCart(); updateCartCount(); renderCartModal();
-        });
-
-        document.getElementById('cartClear').addEventListener('click', ()=>{ cart=[]; saveCart(); updateCartCount(); renderCartModal(); });
-        document.getElementById('cartProceed').addEventListener('click', ()=>{
-            if(cart.length===0){ showToast('Cart is empty'); return; }
-            document.getElementById('cartModalOverlay').classList.remove('active');
-            document.getElementById('checkoutModalOverlay').classList.add('active');
-            document.getElementById('shopOnlineForm').style.display = 'none';
-        });
-
-        document.getElementById('checkoutClose').addEventListener('click', ()=> document.getElementById('checkoutModalOverlay').classList.remove('active'));
-        document.getElementById('checkoutModalOverlay').addEventListener('click', function(e){ if(e.target===this) this.classList.remove('active'); });
-
-        document.getElementById('whatsappCheckout').addEventListener('click', ()=>{
-            let message = `🛒 *Order from Shri Rajasthani Sweets*%0A%0A`;
-            let total = 0;
-            cart.forEach((item,i)=>{
-                message += `${i+1}. ${item.name} - ₹${item.price} x ${item.qty} = ₹${item.price*item.qty}%0A`;
-                total += item.price*item.qty;
-            });
-            message += `%0A*Total: ₹${total}*%0A%0APlease confirm my order and delivery details.`;
-            window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${message}`, '_blank');
-            document.getElementById('checkoutModalOverlay').classList.remove('active');
-        });
-
-        document.getElementById('shopOnlineBtn').addEventListener('click', ()=>{
-            document.getElementById('shopOnlineForm').style.display = 'block';
-        });
-
-        document.getElementById('placeOrderBtn').addEventListener('click', ()=>{
-            const name = document.getElementById('custName').value.trim();
-            const phone = document.getElementById('custPhone').value.trim();
-            const address = document.getElementById('custAddress').value.trim();
-            if(!name || !phone || !address) { showToast('Please fill all delivery details'); return; }
-            const order = {
-                id: Date.now(),
-                customer: { name, phone, address },
-                items: [...cart],
-                total: cart.reduce((s,i)=>s + i.price*i.qty,0),
-                timestamp: new Date().toLocaleString(),
-            };
-            orders.unshift(order);
-            if(orders.length > 50) orders.length = 50;
-            saveOrders();
-            cart = [];
-            saveCart();
-            updateCartCount();
-            document.getElementById('checkoutModalOverlay').classList.remove('active');
-            document.getElementById('custName').value = '';
-            document.getElementById('custPhone').value = '';
-            document.getElementById('custAddress').value = '';
-            showCatCelebration();
-        });
-
-        document.getElementById('menuPopupClose').addEventListener('click', ()=> document.getElementById('menuPopupOverlay').classList.remove('active'));
-        document.getElementById('menuPopupOverlay').addEventListener('click', function(e){ if(e.target===this) this.classList.remove('active'); });
-        document.getElementById('menuPopupAddToCart').addEventListener('click', ()=>{
-            if (currentPopupMenuItem) {
-                addToCartFromMenu(currentPopupMenuItem);
-                document.getElementById('menuPopupOverlay').classList.remove('active');
-            }
-        });
-
-        document.getElementById('adminTrigger').addEventListener('click', ()=>{
-            document.getElementById('passwordModalOverlay').classList.add('active');
-            document.getElementById('passwordInput').value = '';
-            document.getElementById('passwordInput').focus();
-        });
-        document.getElementById('btnPasswordSubmit').addEventListener('click', verifyPassword);
-        document.getElementById('passwordInput').addEventListener('keydown', function(e){ if(e.key==='Enter') verifyPassword(); });
-        document.getElementById('passwordModalOverlay').addEventListener('click', function(e){ if(e.target===this) this.classList.remove('active'); });
-
-        document.getElementById('adminClose').addEventListener('click', closeAdminPanel);
-        document.getElementById('adminModalOverlay').addEventListener('click', function(e){ if(e.target===this) closeAdminPanel(); });
-
-        document.getElementById('adminTabProducts').addEventListener('click', ()=>{ setActiveAdminTab('products'); });
-        document.getElementById('adminTabOrders').addEventListener('click', ()=>{ setActiveAdminTab('orders'); });
-        document.getElementById('adminTabMenu').addEventListener('click', ()=>{ setActiveAdminTab('menu'); });
-
-        document.getElementById('btnAddProduct').addEventListener('click', addProduct);
-        document.getElementById('adminProductList').addEventListener('click', function(e){
-            const btn = e.target.closest('[data-delete]'); if(!btn) return;
-            deleteProduct(parseInt(btn.dataset.delete));
-        });
-        document.getElementById('btnChangePassword').addEventListener('click', changePassword);
-
-        document.getElementById('btnAddMenuItem').addEventListener('click', addMenuItem);
-        document.getElementById('adminMenuList').addEventListener('click', function(e){
-            const btn = e.target.closest('[data-delete-menu]'); if(!btn) return;
-            deleteMenuItem(parseInt(btn.dataset.deleteMenu));
-        });
-        document.getElementById('btnUpdateHeroImage').addEventListener('click', ()=>{
-            const url = document.getElementById('heroImageUrl').value.trim();
-            if(url) { saveHeroImage(url); showToast('✅ Hero image updated (local)'); }
-            else { showToast('⚠️ Enter a valid URL'); }
-        });
-
-        let lastScrollY=0; const stickyBar=document.getElementById('stickyBar');
-        window.addEventListener('scroll', function(){ const sy=window.scrollY; if(sy>400&&sy>lastScrollY) stickyBar.style.transform='translateY(120px)'; else stickyBar.style.transform='translateY(0)'; lastScrollY=sy; }, {passive:true});
-    }
-
-    function setActiveAdminTab(tab) {
-        document.getElementById('adminProductsSection').style.display = tab === 'products' ? 'block' : 'none';
-        document.getElementById('adminOrdersSection').style.display = tab === 'orders' ? 'block' : 'none';
-        document.getElementById('adminMenuSection').style.display = tab === 'menu' ? 'block' : 'none';
-        document.getElementById('adminTabProducts').style.background = tab === 'products' ? 'var(--orange-600)' : 'var(--gray-200)';
-        document.getElementById('adminTabProducts').style.color = tab === 'products' ? '#fff' : 'var(--gray-700)';
-        document.getElementById('adminTabOrders').style.background = tab === 'orders' ? 'var(--orange-600)' : 'var(--gray-200)';
-        document.getElementById('adminTabOrders').style.color = tab === 'orders' ? '#fff' : 'var(--gray-700)';
-        document.getElementById('adminTabMenu').style.background = tab === 'menu' ? 'var(--orange-600)' : 'var(--gray-200)';
-        document.getElementById('adminTabMenu').style.color = tab === 'menu' ? '#fff' : 'var(--gray-700)';
-        if (tab === 'orders') renderOrdersList();
-        if (tab === 'menu') renderAdminMenuList();
-        if (tab === 'products') renderAdminProductList();
-        document.getElementById('heroImageUrl').value = localStorage.getItem(CONFIG.heroImageKey) || '';
-    }
-
-    function verifyPassword() {
-        const input = document.getElementById('passwordInput').value.trim();
-        if(input === adminPassword) {
-            document.getElementById('passwordModalOverlay').classList.remove('active');
-            openAdminPanel();
-        } else {
-            showToast('❌ Incorrect password');
-            document.getElementById('passwordInput').value = '';
-        }
-    }
-
-    function openAdminPanel() {
-        document.getElementById('adminModalOverlay').classList.add('active');
-        setActiveAdminTab('products');
-        renderAdminProductList();
-        document.getElementById('heroImageUrl').value = localStorage.getItem(CONFIG.heroImageKey) || '';
-    }
-    function closeAdminPanel() { document.getElementById('adminModalOverlay').classList.remove('active'); }
-
-    function renderAdminProductList() {
-        const list = document.getElementById('adminProductList');
-        list.innerHTML = products.map(p=>`
-            <li>
-                <span style="font-size:22px;">${getCategoryEmoji(p.category)}</span>
-                <span class="prod-name">${p.name}</span>
-                <span class="prod-cat">${p.category}</span>
-                <span class="prod-price">₹${p.price}</span>
-                <button class="btn-danger" data-delete="${p.id}" style="padding:6px 12px;">🗑️</button>
-            </li>
-        `).join('');
-    }
-
-    function renderOrdersList() {
-        const container = document.getElementById('adminOrdersList');
-        if(orders.length===0) {
-            container.innerHTML = '<p style="color:gray; text-align:center;">No orders yet.</p>';
-        } else {
-            container.innerHTML = orders.map((o,idx)=>
-                `<div style="border:1px solid var(--gray-200); border-radius:var(--radius-sm); padding:12px; margin-bottom:10px;">
-                    <strong>#${o.id.toString().slice(-6)}</strong> - ${o.timestamp}<br>
-                    👤 ${o.customer.name} | 📞 ${o.customer.phone}<br>
-                    📍 ${o.customer.address}<br>
-                    🛒 ${o.items.map(i=>`${i.name} x${i.qty}`).join(', ')}<br>
-                    💰 Total: ₹${o.total}
-                    <button style="float:right; background:var(--red-500); color:#fff; border:none; padding:4px 10px; border-radius:var(--radius-xs); cursor:pointer;" onclick="deleteOrder(${idx})">Delete</button>
-                </div>`
-            ).join('');
-        }
-    }
-    window.deleteOrder = function(idx) {
-        if(confirm('Delete this order?')) { orders.splice(idx,1); saveOrders(); renderOrdersList(); }
-    };
-
-    function renderAdminMenuList() {
-        const list = document.getElementById('adminMenuList');
-        list.innerHTML = menuItems.map(item => `
-            <li>
-                <span style="font-size:22px;">🍬</span>
-                <span class="prod-name">${item.name}</span>
-                <span class="prod-price">₹${item.price}</span>
-                <button class="btn-danger" data-delete-menu="${item.id}" style="padding:6px 12px;">🗑️</button>
-            </li>
-        `).join('');
-    }
-
-    function addProduct() {
-        const name = document.getElementById('addName').value.trim();
-        const cat = document.getElementById('addCategory').value;
-        const price = parseInt(document.getElementById('addPrice').value);
-        const desc = document.getElementById('addDesc').value.trim();
-        const imgUrl = document.getElementById('addImageUrl').value.trim();
-        const file = document.getElementById('addImageFile').files[0];
-        if(!name || isNaN(price) || price<=0){ showToast('⚠️ Enter valid name & price'); return; }
-        const finalize = (img) => {
-            products.unshift({ id: nextProductId++, name, category:cat, price, desc, image:img });
-            saveProductsLocal(); renderProducts(); renderAdminProductList(); clearAddForm(); showToast('✅ Product added (local preview)');
-        };
-        if(file) {
-            const reader = new FileReader();
-            reader.onload = e => resizeImage(e.target.result, 300, 300, finalize);
-            reader.readAsDataURL(file);
-        } else { finalize(imgUrl); }
-    }
-
-    function resizeImage(dataUrl, w, h, cb) {
-        const img = new Image(); img.onload = () => {
-            const canvas = document.createElement('canvas'); canvas.width=w; canvas.height=h;
-            canvas.getContext('2d').drawImage(img,0,0,w,h); cb(canvas.toDataURL('image/jpeg',0.75));
-        }; img.src=dataUrl;
-    }
-
-    function clearAddForm() {
-        document.getElementById('addName').value=''; document.getElementById('addPrice').value='';
-        document.getElementById('addDesc').value=''; document.getElementById('addImageUrl').value='';
-        document.getElementById('addImageFile').value='';
-    }
-
-    function deleteProduct(id) {
-        if(!confirm('Delete product (local)? This will not affect the main products.json file.')) return;
-        products = products.filter(p=>p.id!==id);
-        saveProductsLocal(); renderProducts(); renderAdminProductList();
-    }
-
-    function addMenuItem() {
-        const name = document.getElementById('menuAddName').value.trim();
-        const price = parseInt(document.getElementById('menuAddPrice').value);
-        const imgUrl = document.getElementById('menuAddImageUrl').value.trim();
-        const file = document.getElementById('menuAddImageFile').files[0];
-        if(!name || isNaN(price) || price<=0){ showToast('⚠️ Enter valid name & price'); return; }
-        const finalize = (img) => {
-            menuItems.unshift({ id: nextMenuItemId++, name, price, image: img });
-            saveMenuItemsLocal(); renderMenuChart(); renderAdminMenuList(); clearMenuAddForm(); showToast('✅ Menu item added (local preview)');
-        };
-        if(file) {
-            const reader = new FileReader();
-            reader.onload = e => resizeImage(e.target.result, 300, 300, finalize);
-            reader.readAsDataURL(file);
-        } else { finalize(imgUrl); }
-    }
-
-    function clearMenuAddForm() {
-        document.getElementById('menuAddName').value = '';
-        document.getElementById('menuAddPrice').value = '';
-        document.getElementById('menuAddImageUrl').value = '';
-        document.getElementById('menuAddImageFile').value = '';
-    }
-
-    function deleteMenuItem(id) {
-        if(!confirm('Delete menu item (local)? This will not affect menu.json.')) return;
-        menuItems = menuItems.filter(m => m.id !== id);
-        saveMenuItemsLocal(); renderMenuChart(); renderAdminMenuList();
-    }
-
-    function changePassword() {
-        const np = document.getElementById('newPassword').value.trim();
-        if(!np || np.length<4){ showToast('⚠️ Min 4 characters'); return; }
-        savePassword(np); document.getElementById('newPassword').value=''; showToast('🔑 Password updated');
-    }
-
-    function showCatCelebration() {
-        const overlay = document.getElementById('catCelebration');
-        overlay.classList.add('active');
-        setTimeout(() => { overlay.classList.remove('active'); }, 3000);
-    }
-
-    function showToast(msg) {
-        const t = document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
-        clearTimeout(t._timeout); t._timeout = setTimeout(()=>t.classList.remove('show'), 2200);
-    }
-
-    function updateProductCount() { document.getElementById('productCount').textContent = products.length + '+ Items'; }
-
-    init();
-})();
+// ========== START ==========
+startRealtimeListeners();
+setupEventListeners();
+updateCartBadge();
 </script>
 </body>
 </html>
